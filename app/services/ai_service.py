@@ -7,7 +7,7 @@ def get_ai_response(user_input: str) -> str:
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful AI assistant."},
+            {"role": "system", "content": "You are an AI tutor. Answer clearly, concisely, and in bullet points. Don't exceed more than 3 points."},
             {"role": "user", "content": user_input}
         ],
         temperature=0.7
