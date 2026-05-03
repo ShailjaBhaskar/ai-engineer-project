@@ -5,26 +5,42 @@ from app.core.config import OPENAI_API_KEY
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+def chunk_text(text, chunk_size=50):
+    words = text.split()
+    chunks = []
+
+    for i in range(0, len(words), chunk_size):
+        chunk = " ".join(words[i:i+chunk_size])
+        chunks.append(chunk)
+
+    return chunks
+
 documents = [
-    "AI is the simulation of human intelligence.",
-    "Machine Learning is a subset of AI.",
-    "FastAPI is a Python framework for building APIs.",
-    "Embeddings convert text into numerical vectors."
+    "AI is the simulation of human intelligence. It includes machine learning and deep learning.",
+    "FastAPI is a modern Python web framework used for building APIs."
 ]
 
-def create_document_embeddings():
-    embeddings = []
+all_chunks = []
 
-    for doc in documents:
-        emb = get_embedding(doc)
-        embeddings.append((doc, emb))
+for doc in documents:
+    chunks = chunk_text(doc)
+    all_chunks.extend(chunks)
 
-    return embeddings
+doc_embeddings = [(chunk, get_embedding(chunk)) for chunk in all_chunks]
+
+# def create_document_embeddings():
+#     embeddings = []
+
+#     for doc in documents:
+#         emb = get_embedding(doc)
+#         embeddings.append((doc, emb))
+
+#     return embeddings
 
 def cosine_similarity(vec1, vec2):
     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
-def retrieve(query, doc_embeddings, top_k=2):
+def retrieve(query, doc_embeddings, top_k=3):
     query_emb = get_embedding(query)
 
     scores = []
@@ -46,7 +62,12 @@ def generate_answer(query, context_docs):
         messages=[
             {
                 "role": "system",
-                "content": "Answer based ONLY on the provided context."
+                "content": """
+                You are a helpful assistant.
+
+                Answer ONLY from the provided context.
+                If answer is not in context, say "I don't know".
+                """
             },
             {
                 "role": "user",
@@ -59,8 +80,8 @@ def generate_answer(query, context_docs):
     return response.choices[0].message.content
 
 def rag_pipeline(query):
-    doc_embeddings = create_document_embeddings()
-    relevant_docs = retrieve(query, doc_embeddings)
+    # doc_embeddings = create_document_embeddings()
+    relevant_docs = retrieve(query)
     answer = generate_answer(query, relevant_docs)
 
     return answer
