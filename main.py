@@ -38,8 +38,11 @@
 #     main()
 
 from app.services.rag_service import rag_pipeline
+from app.services.vector_db import store_documents
+from app.services.rag_service import all_chunks
 
 def main():
+    store_documents(all_chunks)
     while True:
         query = input("You: ")
 

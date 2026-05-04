@@ -2,15 +2,28 @@ from app.services.embedding_service import get_embedding
 import numpy as np
 from openai import OpenAI
 from app.core.config import OPENAI_API_KEY
+from app.services.vector_db import query_db
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-def chunk_text(text, chunk_size=50):
+# def chunk_text(text, chunk_size=50):
+#     words = text.split()
+#     chunks = []
+
+#     for i in range(0, len(words), chunk_size):
+#         chunk = " ".join(words[i:i+chunk_size])
+#         chunks.append(chunk)
+
+#     return chunks
+
+def chunk_text(text, chunk_size=50, overlap=10):
     words = text.split()
     chunks = []
 
-    for i in range(0, len(words), chunk_size):
-        chunk = " ".join(words[i:i+chunk_size])
+    step = chunk_size - overlap
+
+    for i in range(0, len(words), step):
+        chunk = " ".join(words[i:i + chunk_size])
         chunks.append(chunk)
 
     return chunks
@@ -79,9 +92,15 @@ def generate_answer(query, context_docs):
 
     return response.choices[0].message.content
 
-def rag_pipeline(query):
-    # doc_embeddings = create_document_embeddings()
-    relevant_docs = retrieve(query)
-    answer = generate_answer(query, relevant_docs)
+# def rag_pipeline(query):
+#     # doc_embeddings = create_document_embeddings()
+#     relevant_docs = retrieve(query)
+#     answer = generate_answer(query, relevant_docs)
 
+#     return answer
+
+
+def rag_pipeline(query):
+    relevant_docs = query_db(query)
+    answer = generate_answer(query, relevant_docs)
     return answer
