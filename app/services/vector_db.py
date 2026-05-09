@@ -7,6 +7,7 @@ try:
     client.delete_collection(name="docs")
 except:
     pass
+
 collection = client.create_collection(name="docs")
 
 def store_documents(docs):
